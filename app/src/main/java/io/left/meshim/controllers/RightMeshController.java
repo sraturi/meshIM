@@ -272,10 +272,9 @@ public class RightMeshController implements MeshStateListener {
                 }
 
                 if (sender != null && user != null) {
-                    //todo: handle files being recieved
                     String filePath = "";
                     if (!protoMessage.getFileByte().isEmpty()) {
-                        filePath = writeFileExternalStorage(protoMessage.getFileExtension(),
+                        filePath = writeFileToExternalStorage(protoMessage.getFileExtension(),
                                 protoMessage.getFileByte().toByteArray());
                     }
                     Message message = new Message(sender, user, protoMessage.getMessage(),
@@ -481,7 +480,7 @@ public class RightMeshController implements MeshStateListener {
      * @param fileByte file bytes to convert
      * @return a path to the newly written file
      */
-    public String writeFileExternalStorage(String fileName, byte[] fileByte) {
+    public String writeFileToExternalStorage(String fileName, byte[] fileByte) {
         String state = Environment.getExternalStorageState();
         //external storage availability check
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
@@ -522,6 +521,7 @@ public class RightMeshController implements MeshStateListener {
         // to ensure that file is not larger than Integer.MAX_VALUE.
         if (length > Integer.MAX_VALUE) {
             // File is too large
+            throw new IOException("File is too large, file size: " + file.length() + "bytes");
         }
 
         // Create the byte array to hold the data
@@ -549,7 +549,7 @@ public class RightMeshController implements MeshStateListener {
      * @return extension as a string
      */
     public static String getFileExtension(String fileName) {
-        String extension = null;
+        String extension = "";
         int i = fileName.lastIndexOf('.');
         if (i > 0) {
             extension = fileName.substring(i + 1);

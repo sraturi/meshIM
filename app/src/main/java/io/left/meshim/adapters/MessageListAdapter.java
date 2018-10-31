@@ -1,6 +1,7 @@
 package io.left.meshim.adapters;
 
 import static io.left.meshim.controllers.RightMeshController.getFileExtension;
+
 import android.net.Uri;
 import android.os.DeadObjectException;
 import android.os.RemoteException;
@@ -125,6 +126,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     public void onBindViewHolder(MessageViewHolder holder, int position) {
         Message message = mMessageList.get(position);
         if (message != null) {
+
+            if (!message.getFilePath().equals("")) {
+                holder.mFileName.setText(message.getFileName());
+                if (!message.getFileName().equals("")) {
+                    if (FileExtensions.IMAGE.contains(
+                            getFileExtension(message.getFilePath()))) {
+                        holder.mImage.setImageURI(Uri.parse(new File(
+                                message.getFilePath()).toString()));
+                        holder.mImage.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
             if (!(message.isMyMessage())) {
                 holder.mMessageBody.setText(message.getMessage());
                 holder.mTime.setText(Message.formateDate(message.getDate()));
@@ -132,21 +145,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 User sender = message.getSender();
                 if (sender != null) {
                     holder.mUserImage.setImageResource(sender.getAvatar());
-                }
-                if (message.getFilePath() != "") {
-                    holder.mFileName.setText(message.getFileName());
-                    if (!message.getFilePath().equals("")) {
-                        holder.mFileName.setText(message.getFileName());
-                        if (FileExtensions.IMAGE.contains(
-                                getFileExtension(message.getFilePath()))) {
-                            File file = new File(message.getFilePath());
-                            if (file.exists()) {
-                                holder.mImage.setImageURI(Uri.parse(String.valueOf(
-                                        new File(message.getFilePath()))));
-                                holder.mImage.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    }
                 }
             } else {
                 holder.mMessageBody.setText(message.getMessage());
@@ -157,17 +155,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                     holder.mDeliveryStatus.setImageResource(R.drawable.ic_done_all_black_24dp);
                 }
 
-                if (!message.getFilePath().equals("")) {
-                    holder.mFileName.setText(message.getFileName());
-                    if (!message.getFileName().equals("")) {
-                        if (FileExtensions.IMAGE.contains(
-                                getFileExtension(message.getFilePath()))) {
-                            holder.mImage.setImageURI(Uri.parse(new File(
-                                    message.getFilePath()).toString()));
-                            holder.mImage.setVisibility(View.VISIBLE);
-                        }
-                    }
-                }
             }
         }
     }
