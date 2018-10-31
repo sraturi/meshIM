@@ -35,6 +35,7 @@ import io.left.rightmesh.util.RightMeshException;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,6 +85,7 @@ public class RightMeshController implements MeshStateListener {
     private Timer undeliveredPackageTimer;
     private boolean isTimerRunning = false;
     private final int UNDELIVERED_PACKAGE_TIMEOUT = 8000;
+
     /**
      * Constructor.
      * @param user user info for this device
@@ -125,16 +127,19 @@ public class RightMeshController implements MeshStateListener {
      * Sends a simple text message to another user.
      * @param recipient recipient of the message
      * @param message contents of the message
-     * @param filePath
-     * @param fileExtension
+     * @param filePath file path
+     * @param fileExtension extension of the file being sent
      */
-    public void sendTextMessage(User recipient, String message, String filePath, String fileExtension) {
-        Message messageObject = new Message(user, recipient, message, true,filePath,fileExtension);
+    public void sendTextMessage(User recipient, String message,
+                                String filePath, String fileExtension) {
+        Message messageObject = new Message(user, recipient, message, true,
+                filePath,fileExtension);
         try {
             byte[] messagePayload = createMessagePayloadFromMessage(messageObject);
             if (messagePayload != null) {
-                int deliveryDataId = meshManager.sendDataReliable(recipient.getMeshId(), MESH_PORT, messagePayload);
-                long insertedMessageInfo[] = dao.insertMessages(messageObject);
+                int deliveryDataId = meshManager.sendDataReliable(recipient.getMeshId(),
+                        MESH_PORT, messagePayload);
+                long[] insertedMessageInfo = dao.insertMessages(messageObject);
                 //save the id of the message in the hashmap.
                 unDeliveredMessageIds.put(deliveryDataId, (int) insertedMessageInfo[0]);
                 updateInterface();
@@ -269,12 +274,12 @@ public class RightMeshController implements MeshStateListener {
                 if (sender != null && user != null) {
                     //todo: handle files being recieved
                     String filePath = "";
-                    if(!protoMessage.getFileByte().isEmpty()){
+                    if (!protoMessage.getFileByte().isEmpty()) {
                         filePath = writeFileExternalStorage(protoMessage.getFileExtension(),
                                 protoMessage.getFileByte().toByteArray());
                     }
-                    Message message = new Message(sender, user, protoMessage.getMessage(), false,
-                           filePath,protoMessage.getFileExtension());
+                    Message message = new Message(sender, user, protoMessage.getMessage(),
+                            false, filePath, protoMessage.getFileExtension());
                     message.setDelivered(true);
                     dao.insertMessages(message);
                     meshIMService.sendNotification(sender, message);
@@ -301,7 +306,8 @@ public class RightMeshController implements MeshStateListener {
                 && (event.state == ADDED || event.state == UPDATED)) {
             discovered.add(event.peerUuid);
             // let the user know mesh has discovered a new user, and is getting details.
-            User tempUser = new User(meshIMService.getString(R.string.get_user_details), R.mipmap.account_default);
+            User tempUser = new User(meshIMService.getString(R.string.get_user_details),
+                    R.mipmap.account_default);
             users.put(event.peerUuid, tempUser);
             updateInterface();
         }
@@ -311,12 +317,12 @@ public class RightMeshController implements MeshStateListener {
             byte[] message = createPeerUpdatePayloadFromUser(user);
             try {
                 if (message != null) {
-                   int dataId = meshManager.sendDataReliable(event.peerUuid, MESH_PORT, message);
-                   //making the status of the message undelivered so we can resend the package if delivery
-                    // report is not recieved.
-                   undeliveredPeerUpdateMessages.put(dataId,event.peerUuid);
-                   // schedule a task to resend undelivered peer updates.
-                   resendUndeliveredPackages();
+                    int dataId = meshManager.sendDataReliable(event.peerUuid, MESH_PORT, message);
+                    //making the status of the message undelivered so we can resend the
+                    // package if delivery report is not recieved.
+                    undeliveredPeerUpdateMessages.put(dataId,event.peerUuid);
+                    // schedule a task to resend undelivered peer updates.
+                    resendUndeliveredPackages();
                 }
             } catch (RightMeshException ignored) {
                 // Message sending failed. Other user may have out of date information, but
@@ -360,7 +366,7 @@ public class RightMeshController implements MeshStateListener {
         }
         MeshIMMessages.Message protoMsg = null;
         //if there is a filebyte to write in protobuf we write it.
-        if(!message.getFilePath().equals("")) {
+        if (!message.getFilePath().equals("")) {
             try {
                 File file = new File(message.getFilePath());
                 protoMsg = MeshIMMessages.Message.newBuilder()
@@ -372,8 +378,7 @@ public class RightMeshController implements MeshStateListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else{
+        } else {
             protoMsg = MeshIMMessages.Message.newBuilder()
                     .setMessage(message.getMessage())
                     .setTime(message.getDateAsTimestamp())
@@ -425,31 +430,32 @@ public class RightMeshController implements MeshStateListener {
     void handleDataDelivery(RightMeshEvent e) {
         MeshManager.DataDeliveredEvent event = (MeshManager.DataDeliveredEvent) e;
         final int deliveryDataId = event.data_id;
-        if(unDeliveredMessageIds.containsKey(deliveryDataId)){
+        if (unDeliveredMessageIds.containsKey(deliveryDataId)) {
             //updating the message delivery status in the database
             dao.updateMessageIsDelivered(unDeliveredMessageIds.get(deliveryDataId));
             unDeliveredMessageIds.remove(deliveryDataId);
             updateInterface();
-        }
-        else if(undeliveredPeerUpdateMessages.containsKey(deliveryDataId)){
-            // removing the message from undeliveredPeerUpdate map since we dont need to send it again.
+        } else if (undeliveredPeerUpdateMessages.containsKey(deliveryDataId)) {
+            // removing the message from undeliveredPeerUpdate map since
+            // we dont need to send it again.
             undeliveredPeerUpdateMessages.remove(deliveryDataId);
         }
     }
 
     /**
-     * Runs a timer task when there are undelivered peer updates in the que
+     * Runs a timer task when there are undelivered peer updates in the queue.
      */
-    void resendUndeliveredPackages(){
-        if(!isTimerRunning && !undeliveredPeerUpdateMessages.isEmpty()){
+    void resendUndeliveredPackages() {
+        if (!isTimerRunning && !undeliveredPeerUpdateMessages.isEmpty()) {
             isTimerRunning = true;
             undeliveredPackageTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     //check if there are any undelivered packages
-                    if(!undeliveredPeerUpdateMessages.isEmpty()){
+                    if (!undeliveredPeerUpdateMessages.isEmpty()) {
                         byte[] message = createPeerUpdatePayloadFromUser(user);
-                        for(Map.Entry<Integer,MeshId> meshIdEntry: undeliveredPeerUpdateMessages.entrySet()){
+                        for (Map.Entry<Integer,MeshId> meshIdEntry:
+                                undeliveredPeerUpdateMessages.entrySet()) {
                             MeshId peerId = meshIdEntry.getValue();
                             try {
                                 //send the packages again if there are undelivered packages
@@ -470,7 +476,7 @@ public class RightMeshController implements MeshStateListener {
     }
 
     /**
-     * this functions converts a byte array into a file
+     * this functions converts a byte array into a file.
      * @param fileName name of the file with extension
      * @param fileByte file bytes to convert
      * @return a path to the newly written file
@@ -486,22 +492,25 @@ public class RightMeshController implements MeshStateListener {
         FileOutputStream outputStream = null;
         try {
             file.createNewFile();
-            //second argument of FileOutputStream constructor indicates whether to append or create new file if one exists
+            //second argument of FileOutputStream constructor indicates whether
+            // to append or create new file if one exists
             outputStream = new FileOutputStream(file, false);
             outputStream.write(fileByte);
             outputStream.flush();
             outputStream.close();
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return file.getPath();
     }
 
     /**
-     * this function turns any file into byte arrays
+     * this function turns any file into byte arrays.
      * @param file the file to turn byte arrays into
      * @return  byte arrays
-     * @throws IOException
+     * @throws IOException io exception
      */
     public static byte[] getBytesFromFile(File file) throws IOException {
         InputStream fileInputStream = new FileInputStream(file);
@@ -521,18 +530,24 @@ public class RightMeshController implements MeshStateListener {
         int offset = 0;
         int numRead = 0;
         while (offset < bytes.length
-                && (numRead=fileInputStream.read(bytes, offset, bytes.length-offset)) >= 0) {
+                && (numRead = fileInputStream.read(bytes, offset,
+                bytes.length - offset)) >= 0) {
             offset += numRead;
         }
         // Ensure all the bytes have been read in
         if (offset < bytes.length) {
-            throw new IOException("Could not completely read file "+file.getName());
+            throw new IOException("Could not completely read file " + file.getName());
         }
         // Close the input stream and return bytes
         fileInputStream.close();
         return bytes;
     }
 
+    /**
+     * returns file extension as a string.
+     * @param fileName name of the file with extension
+     * @return extension as a string
+     */
     public static String getFileExtension(String fileName) {
         String extension = null;
         int i = fileName.lastIndexOf('.');

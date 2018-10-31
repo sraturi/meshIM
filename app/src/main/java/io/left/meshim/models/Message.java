@@ -57,7 +57,7 @@ public class Message implements Parcelable {
     private boolean isDelivered;
 
     //file stuff
-    @ColumnInfo(name="FilePath")
+    @ColumnInfo(name = "FilePath")
     private String filePath;
     @ColumnInfo(name = "FileExtension")
     private String fileName;
@@ -144,12 +144,15 @@ public class Message implements Parcelable {
      * @param recipient target recipient of the message
      * @param message message contents
      * @param isMyMessage if this device's user sent the message
+     * @param fileName file name of the file associated with the message
+     * @param filePath path of the file
      */
     @Ignore
-    public Message(User sender, User recipient, String message, boolean isMyMessage, String filePath, String fileName) {
+    public Message(User sender, User recipient, String message, boolean isMyMessage,
+                   String filePath, String fileName) {
         this(sender, sender.id, recipient, recipient.id, message, isMyMessage, new Date());
         this.isRead = false;
-        this.isDelivered =false;
+        this.isDelivered = false;
         this.fileName = fileName;
         this.filePath = filePath;
     }
@@ -163,11 +166,14 @@ public class Message implements Parcelable {
      * @param message message contents
      * @param isMyMessage if this device's user sent the message
      * @param date date message was sent
+     * @param fileName file name of the file associated with the message
+     * @param filePath path of the file
      */
-    public Message(int senderId, int recipientId, String message, boolean isMyMessage, Date date,String filePath,String fileName) {
+    public Message(int senderId, int recipientId, String message, boolean isMyMessage,
+                   Date date,String filePath,String fileName) {
         this(null, senderId, null, recipientId, message, isMyMessage, date);
         this.isRead = false;
-        this.isDelivered =false;
+        this.isDelivered = false;
         this.fileName = fileName;
         this.filePath = filePath;
 
@@ -196,8 +202,8 @@ public class Message implements Parcelable {
         this.date = date;
         this.isRead = false;
         this.isDelivered = false;
-        this.filePath ="";
-        this.fileName ="";
+        this.filePath = "";
+        this.fileName = "";
     }
 
     /**
@@ -235,9 +241,9 @@ public class Message implements Parcelable {
         recipientId = in.readInt();
         isMyMessage = in.readByte() != 0;
         this.isRead = false;
-        this.isDelivered = in.readByte()!=0;
-       this.filePath = in.readString();
-       this.fileName = in.readString();
+        this.isDelivered = in.readByte() != 0;
+        this.filePath = in.readString();
+        this.fileName = in.readString();
     }
 
     // Required by Parcelable, created by Android Studio.
@@ -286,7 +292,7 @@ public class Message implements Parcelable {
         dest.writeParcelable(recipient, flags);
         dest.writeInt(recipientId);
         dest.writeByte((byte) (isMyMessage ? 1 : 0));
-        dest.writeInt((byte)(isDelivered?1:0));
+        dest.writeInt((byte)(isDelivered ? 1 : 0));
         dest.writeString(filePath);
         dest.writeString(fileName);
     }

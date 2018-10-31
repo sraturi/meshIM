@@ -7,11 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Generic file extensions
+ * Generic file extensions.
  */
-
 public class FileExtensions {
-    public final static Set IMAGE = new HashSet<>(Arrays.asList("png", "jpg","svg"));
-    public final static String[] DOCUMENTS = new String[] {"txt","xlsx", "xls", "doc",
+    public static final  Set IMAGE = new HashSet<>(Arrays.asList("png", "jpg","svg"));
+    public static final  String[] DOCUMENTS = new String[] {"txt","xlsx", "xls", "doc",
             "docx", "ppt", "pptx", "pdf","zip","gif"};
 }

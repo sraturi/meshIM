@@ -152,7 +152,8 @@ public class MeshIMService extends Service {
         }
 
         @Override
-        public void sendTextMessage(User recipient, String message, String filePath, String fileExtension) {
+        public void sendTextMessage(User recipient, String message, String filePath,
+                                    String fileExtension) {
             mMeshConnection.sendTextMessage(recipient, message,filePath,fileExtension);
         }
 
@@ -234,7 +235,6 @@ public class MeshIMService extends Service {
         Settings settings = Settings.fromDisk(this);
         if (mIsForeground && (settings == null || settings.isShowNotifications())) {
             long time = Calendar.getInstance().getTimeInMillis();
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), user.getAvatar());
             Intent intent = new Intent(this, ChatActivity.class);
             intent.putExtra("recipient", user);
             intent.setData(Uri.parse("content://" + time));
@@ -251,6 +251,7 @@ public class MeshIMService extends Service {
             }
             String notifContent =  message.getMessage();
             String notifTitle = user.getUsername();
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), user.getAvatar());
             builder.setWhen(time)
                    .setContentText(notifContent)
                    .setContentTitle(notifTitle)

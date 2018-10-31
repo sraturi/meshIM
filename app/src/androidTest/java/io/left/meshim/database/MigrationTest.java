@@ -131,10 +131,10 @@ public class MigrationTest {
         db.execSQL("INSERT INTO Users (UserID, MeshID, Username, Avatar)"
                 + " VALUES ( " + id + ", X'" + meshIdUuid + "', \"" + userName + "\", "
                 + avatar + ")");
-        db.execSQL("INSERT INTO Messages (MessageId, Contents, Timestamp, SenderId, RecipientId," +
-                "SentFromDevice, IsRead, IsDelivered)" +
-                "VALUES ( " + id + ", \"Hello World\", " + 1 + ", " + senderId + ", " + recipientId
-                + ", " + 1 + ", " + 1 + ", " + 1 + ")");
+        db.execSQL("INSERT INTO Messages (MessageId, Contents, Timestamp, SenderId, RecipientId,"
+                + "SentFromDevice, IsRead, IsDelivered)"
+                + "VALUES ( " + id + ", \"Hello World\", " + 1 + ", " + senderId + ", "
+                + recipientId + ", " + 1 + ", " + 1 + ", " + 1 + ")");
 
         db.close();
         db = helper.runMigrationsAndValidate(TEST_DB, 6, true, MIGRATION_5_6);

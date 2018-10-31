@@ -1,5 +1,9 @@
 package io.left.meshim.activities;
 
+import static com.vincent.filepicker.activity.AudioPickActivity.IS_NEED_RECORDER;
+import static com.vincent.filepicker.activity.VideoPickActivity.IS_NEED_CAMERA;
+import static io.left.meshim.controllers.RightMeshController.getFileExtension;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -28,16 +32,12 @@ import com.vincent.filepicker.filter.entity.ImageFile;
 import com.vincent.filepicker.filter.entity.NormalFile;
 import com.vincent.filepicker.filter.entity.VideoFile;
 
-import java.util.ArrayList;
-
 import io.left.meshim.R;
 import io.left.meshim.adapters.MessageListAdapter;
 import io.left.meshim.models.User;
 import io.left.meshim.utilities.FileExtensions;
 
-import static com.vincent.filepicker.activity.AudioPickActivity.IS_NEED_RECORDER;
-import static com.vincent.filepicker.activity.VideoPickActivity.IS_NEED_CAMERA;
-import static io.left.meshim.controllers.RightMeshController.getFileExtension;
+import java.util.ArrayList;
 
 /**
  * An activity that displays a conversation between two users, and enables sending messages.
@@ -46,10 +46,11 @@ public class ChatActivity extends ServiceConnectedActivity {
     private RecyclerView mMessageListView;
     private MessageListAdapter mMessageListAdapter;
     User mRecipient;
-    private String filePath = "";
-    private String fileName ="";
+    private String mFilePath = "";
+    private String mFileName = "";
     //we can only send one file at a time
     private final int MAX_FILES = 1;
+
     /**
      * {@inheritDoc}.
      */
@@ -85,11 +86,11 @@ public class ChatActivity extends ServiceConnectedActivity {
             if (mService != null) {
                 try {
                     String message = messageText.getText().toString();
-                    if (!message.equals("") || !filePath.equals("")) {
-                        mService.sendTextMessage(mRecipient,message,filePath, fileName);
+                    if (!message.equals("") || !mFilePath.equals("")) {
+                        mService.sendTextMessage(mRecipient,message, mFilePath, mFileName);
                         messageText.setText("");
-                        filePath = "";
-                        fileName = "";
+                        mFilePath = "";
+                        mFileName = "";
                     }
                 } catch (RemoteException re) {
                     if (re instanceof DeadObjectException) {
@@ -110,36 +111,41 @@ public class ChatActivity extends ServiceConnectedActivity {
         switch (requestCode) {
             case Constant.REQUEST_CODE_PICK_FILE:
                 if (resultCode == RESULT_OK) {
-                    ArrayList<NormalFile> list = data.getParcelableArrayListExtra(Constant.RESULT_PICK_FILE);
+                    ArrayList<NormalFile> list = data.getParcelableArrayListExtra(
+                            Constant.RESULT_PICK_FILE);
                     // always get the first file
                     NormalFile file = list.get(0);
                     //getting the file name and extension of the file
-                    fileName = file.getName()+"."+getFileExtension(file.getPath());
-                    filePath = file.getPath();
+                    mFileName = file.getName() + "." + getFileExtension(file.getPath());
+                    mFilePath = file.getPath();
                 }
                 break;
             case Constant.REQUEST_CODE_PICK_IMAGE:
                 if (resultCode == RESULT_OK) {
-                    ArrayList<ImageFile> list = data.getParcelableArrayListExtra(Constant.RESULT_PICK_IMAGE);
-                    ImageFile imageFile= list.get(0);
-                    fileName = imageFile.getName()+"."+getFileExtension(imageFile.getPath());
-                    filePath = imageFile.getPath();
+                    ArrayList<ImageFile> list = data.getParcelableArrayListExtra(
+                            Constant.RESULT_PICK_IMAGE);
+                    ImageFile imageFile = list.get(0);
+                    mFileName = imageFile.getName() + "." + getFileExtension(imageFile.getPath());
+                    mFilePath = imageFile.getPath();
                 }
                 break;
             case Constant.REQUEST_CODE_PICK_VIDEO:
                 if (resultCode == RESULT_OK) {
-                    ArrayList<VideoFile> list = data.getParcelableArrayListExtra(Constant.RESULT_PICK_VIDEO);
+                    ArrayList<VideoFile> list = data.getParcelableArrayListExtra(
+                            Constant.RESULT_PICK_VIDEO);
                     VideoFile videoFile = list.get(0);
-                    fileName = videoFile.getName()+"."+getFileExtension(videoFile.getPath());
-                    filePath = videoFile.getPath();
+                    mFileName = videoFile.getName() + "." + getFileExtension(
+                            videoFile.getPath());
+                    mFilePath = videoFile.getPath();
                 }
                 break;
             case Constant.REQUEST_CODE_PICK_AUDIO:
                 if (resultCode == RESULT_OK) {
-                    ArrayList<AudioFile> list = data.getParcelableArrayListExtra(Constant.RESULT_PICK_AUDIO);
+                    ArrayList<AudioFile> list = data.getParcelableArrayListExtra(
+                            Constant.RESULT_PICK_AUDIO);
                     AudioFile audioFile = list.get(0);
-                    fileName = audioFile.getName()+"."+getFileExtension(audioFile.getPath());
-                    filePath = audioFile.getPath();
+                    mFileName = audioFile.getName() + "." + getFileExtension(audioFile.getPath());
+                    mFilePath = audioFile.getPath();
                 }
                 break;
         }
@@ -190,7 +196,7 @@ public class ChatActivity extends ServiceConnectedActivity {
     }
 
 
-    /**
+     /**
      * creates an alert dialog box to choose files.
      */
     public void alertDialogToChooseFile(View view) {
@@ -205,7 +211,7 @@ public class ChatActivity extends ServiceConnectedActivity {
         builder.setPositiveButton("OK", (dialog, which) -> {
         int checkedButton = radioGroup.getCheckedRadioButtonId();
         Intent intent = null;
-        switch (checkedButton){
+        switch (checkedButton) {
             case R.id.image_radio_button:
                 intent = new Intent(this, ImagePickActivity.class);
                 intent.putExtra(IS_NEED_CAMERA, true);
