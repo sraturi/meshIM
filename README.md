@@ -2,7 +2,7 @@
 
 meshIM is an on- or off-line Android messaging application built on [the RightMesh library](https://rightmesh.io).
 
-You can send messages to other meshIM users over the internet, or form automatically form a local network to send messages to devices nearby!
+You can send messages such as Text, Images, audio, files etc to other meshIM users over the internet, or form automatically form a local network to send messages to devices nearby!
 
 ## RightMesh
 
