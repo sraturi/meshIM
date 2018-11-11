@@ -38,6 +38,7 @@ public class ConversationSummary implements Parcelable {
 
     @ColumnInfo(name = "IsDelivered")
     public boolean isDelivered;
+
     /**
      * General purpose setter-constructor used by Room.
      *
@@ -71,7 +72,7 @@ public class ConversationSummary implements Parcelable {
         peerId = in.readInt();
         this.isRead = (in.readInt() == 1);
         this.unreadMessages = in.readInt();
-        this.isDelivered =(in.readInt()==1);
+        this.isDelivered = (in.readInt() == 1);
     }
 
     // Auto-generated Parcelable stuff.

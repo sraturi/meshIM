@@ -83,7 +83,8 @@ public class ChooseAvatarActivity extends AppCompatActivity {
             // Populate row with images.
             for (int c = 0; c < COLUMNS; c++) {
                 final ImageButton imageButton = (ImageButton) tableRow.getChildAt(c);
-                final int id = getResources().getIdentifier("avatar" + avatarNum, "mipmap", getPackageName());
+                final int id = getResources().getIdentifier("avatar" + avatarNum,
+                        "mipmap", getPackageName());
                 imageButton.setImageResource(id);
 
                 imageButton.setOnClickListener(v -> {

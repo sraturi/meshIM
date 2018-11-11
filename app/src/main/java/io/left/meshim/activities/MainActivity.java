@@ -104,12 +104,10 @@ public class MainActivity extends ServiceConnectedActivity
      * Configure the content and UI of the tabs.
      */
     private void configureTabs() {
-        Resources resources = getResources();
-
         mTabs = findViewById(R.id.tabHost);
         mTabs.setOnTabChangedListener(this);
         mTabs.setup();
-
+        Resources resources = getResources();
         //Tab 1
         TabHost.TabSpec spec = mTabs.newTabSpec("Tab One");
         spec.setContent(R.id.tab1);

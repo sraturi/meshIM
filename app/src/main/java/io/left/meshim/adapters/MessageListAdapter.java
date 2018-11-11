@@ -1,5 +1,8 @@
 package io.left.meshim.adapters;
 
+import static io.left.meshim.controllers.RightMeshController.getFileExtension;
+
+import android.net.Uri;
 import android.os.DeadObjectException;
 import android.os.RemoteException;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +17,9 @@ import io.left.meshim.models.Message;
 import io.left.meshim.models.User;
 import io.left.meshim.services.IMeshIMService;
 import io.left.meshim.services.MeshIMService;
+import io.left.meshim.utilities.FileExtensions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +51,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         if (service == null) {
             return;
         }
-
         try {
             List<Message> query = service.fetchMessagesForUser(this.mRecipient);
             this.mMessageList.clear();
@@ -64,6 +68,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         TextView mMessageBody;
         ImageView mUserImage;
         ImageView mDeliveryStatus;
+        TextView mFileName;
+        ImageView mImage;
 
         /**
          * Checks whether the message should be displayed in send or received layout.
@@ -79,10 +85,14 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 mUserImage = view.findViewById(R.id.image_message_profile);
                 mMessageBody = view.findViewById(R.id.text_message_body);
                 mTime = view.findViewById(R.id.text_message_time_recieved);
+                mFileName = view.findViewById(R.id.text_file_recieved);
+                mImage = view.findViewById(R.id.text_recieve_image);
             } else {
                 mMessageBody = view.findViewById(R.id.text_message_body_sent);
                 mTime = view.findViewById(R.id.text_message_time_sent);
                 mDeliveryStatus = view.findViewById(R.id.text_message_delivery_image);
+                mFileName = view.findViewById(R.id.text_message_file);
+                mImage = view.findViewById(R.id.text_sent_imageview);
             }
         }
     }
@@ -116,6 +126,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     public void onBindViewHolder(MessageViewHolder holder, int position) {
         Message message = mMessageList.get(position);
         if (message != null) {
+
+            if (!message.getFilePath().equals("")) {
+                holder.mFileName.setText(message.getFileName());
+                if (!message.getFileName().equals("")) {
+                    if (FileExtensions.IMAGE.contains(
+                            getFileExtension(message.getFilePath()))) {
+                        holder.mImage.setImageURI(Uri.parse(new File(
+                                message.getFilePath()).toString()));
+                        holder.mImage.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
             if (!(message.isMyMessage())) {
                 holder.mMessageBody.setText(message.getMessage());
                 holder.mTime.setText(Message.formateDate(message.getDate()));
@@ -127,11 +149,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             } else {
                 holder.mMessageBody.setText(message.getMessage());
                 holder.mTime.setText(Message.formateDate(message.getDate()));
-                if(!message.isDelivered()) {
+                if (!message.isDelivered()) {
                     holder.mDeliveryStatus.setImageResource(R.drawable.ic_done_black_24dp);
                 } else {
                     holder.mDeliveryStatus.setImageResource(R.drawable.ic_done_all_black_24dp);
                 }
+
             }
         }
     }
