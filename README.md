@@ -14,4 +14,4 @@ You can clone this repository and build meshIM in Android Studio. You will need 
 
 ## Dependencies
 
-Aside from RightMesh, meshIM uses [Gson](https://github.com/google/gson) for JSON serialization and Room for database abstraction, as well as some other Google support libraries for backwards compatibility.
+Aside from RightMesh, meshIM uses [Gson](https://github.com/google/gson) for JSON serialization and Room for database abstraction, [MultiType-FilePicker](https://github.com/fishwjy/MultiType-FilePicker) for choosing files, as well as some other Google support libraries for backwards compatibility.
